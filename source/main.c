@@ -29,6 +29,9 @@ static u32 kver = 0;
 
 extern void gfxSetFramebufferInfo(gfxScreen_t screen, u8 id);
 
+Result udsploit();
+Result hook_kernel();
+
 s32 patch_arm11_codeflow(void){
 	__asm__ volatile ( "CPSID AIF\n" "CLREX" );
 	
@@ -74,6 +77,18 @@ int main(int argc, char **argv){
 	aptInit();
 	sdmcInit();
 	romfsInit();
+
+	Result ret = 0;
+
+	ret = udsploit();
+	printf("%08X\n", (unsigned int)ret);
+	if(ret) PANIC(true, "UDSPLOIT FAIL");
+	
+	DEBUG("udsploit success");
+
+	ret = hook_kernel();
+	printf("%08X\n", (unsigned int)ret);
+	if(ret) PANIC(true, "UDSPLOIT HOOK FAIL");
 	
 	kver = osGetKernelVersion();
 	if (kver > SYSTEM_VERSION(2, 53, 0)) //11.4^

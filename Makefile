@@ -9,6 +9,10 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
+ifeq ($(strip $(CTRULIB)),)
+$(error "Please set CTRULIB in your environment. export CTRULIB=<path to>ctrulib/libctru")
+endif
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -55,6 +59,11 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 LIBS	:= -lctru -lm
+
+OBJCOPY = arm-none-eabi-objcopy
+#FINALLINK = arm-none-eabi-ld
+FINALLINK = $(CC)
+LDFLAGS += $(LDFLAGS) -T $(TOPDIR)/otherapp.ld -L"$(DEVKITARM)/arm-none-eabi/lib" -L"$(CTRULIB)/lib"
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -165,6 +174,20 @@ $(OUTPUT).3dsx	:	$(OUTPUT).elf
 endif
 
 $(OUTPUT).elf	:	$(OFILES)
+	@echo $(OFILES)
+	$(FINALLINK) $(FINALLDFLAGS) -o $(OUTPUT).elf $(filter-out build/crt0.o, $(OFILES)) -g -lctru -lm -lc -lg
+
+$(OUTPUT).bin: $(OUTPUT).elf
+	$(OBJCOPY) -O binary $< $@
+
+
+#build/%.o: source/%.c
+#	$(CC) $(CFLAGS) -c $< -o $@
+#	@$(CC) -MM $< > build/$*.d
+#
+#build/%.o: source/%.s
+#	$(CC) -x assembler-with-cpp $(CFLAGS) -c $< -o $@
+#	@$(CC) -MM $< > build/$*.d2
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
