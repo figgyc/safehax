@@ -115,14 +115,14 @@ int main(int argc, char **argv){
 	PANIC(!payload_buf, "FAILED TO ALLOCATE MEMORY!");
 	
 	DEBUG("Reading payload...");
-	payload_size = FileRead(payload_buf, "romfs:/arm9.bin", 0xFF000); //check for a bundled arm9 payload
 	if (!payload_size) payload_size = FileRead(payload_buf, "sdmc:/safehaxpayload.bin", 0xFF000);
 	if (!payload_size) payload_size = FileRead(payload_buf, "sdmc:/arm9.bin", 0xFF000);
 	if (!payload_size) payload_size = FileRead(payload_buf, "sdmc:/arm9loaderhax.bin", 0xFF000);
 	PANIC(!payload_size, "FAILED TO READ THE PAYLOAD!");
 	
+	// this is changed in combohax, otherapp doenst have any romfs so this would be stupid
 	DEBUG("Reading ARM11 payload...");
-	PANIC(!FileRead(payload_buf + 0xFF000, "romfs:/arm11.bin", 0xE00), "FAILED TO READ THE ARM11 PAYLOAD!");
+	PANIC(!FileRead(payload_buf + 0xFF000, "sdmc:/arm11.bin", 0xE00), "FAILED TO READ THE ARM11 PAYLOAD!");
 	
 	/* Setup Framebuffers */ //https://github.com/mid-kid/CakeBrah/blob/master/source/brahma.c#L364
 	
